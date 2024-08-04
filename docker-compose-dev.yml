@@ -1,0 +1,80 @@
+networks:
+  caritas_dev:
+    name: caritas_dev
+    attachable: true
+
+services:
+  db:
+    image: postgres:16.3-alpine
+    attach: false
+    volumes:
+      - ./postgres_data:/home/postgres/pgdata/data
+      - ./:/home/postgres/workdir
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: caritas_dev
+    user: postgres
+    networks:
+      - caritas_dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "${POSTGRES_DB}", "-u", "postgres"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+
+  templ:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM golang:1.22-alpine
+        WORKDIR /project
+        RUN go install github.com/bokwoon95/wgo@latest 
+        RUN go install github.com/a-h/templ/cmd/templ@${TEMPL_VERSION}
+        ENTRYPOINT wgo -file=.go -file=.templ -xfile=_templ.go TEMPL_EXPERIMENT=rawgo templ generate :: go run main.go
+    attach: true
+    env_file: .env
+    volumes:
+      - ./:/project
+    working_dir: /project
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "3000:3000"
+    networks:
+      - caritas_dev
+    links:
+      - db
+    depends_on:
+      db:
+        condition: service_healthy
+
+  sassdev:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM michalklempa/dart-sass:1.70.0
+        WORKDIR /project
+        RUN mkdir -p /project/external \
+          && apt-get update && apt-get install -y curl 
+    attach: true
+    volumes:
+      - ./:/project
+    working_dir: /project
+    command: >
+      /bin/bash -c '
+        if [[ ! -d /project/external/bulma-${BULMA_VERSION} ]]; then \
+          echo "Downloading bulma version ${BULMA_VERSION}"
+          mkdir -p external
+          curl -L https://github.com/jgthms/bulma/archive/refs/tags/${BULMA_VERSION}.tar.gz -o /project/external/bulma-sass.tar.gz
+          cd /project/external 
+          tar -xf bulma-sass.tar.gz 
+          rm bulma-sass.tar.gz 
+        fi
+        /opt/dart-sass/sass --watch --no-source-map /project/styles.scss:/project/public/assets/css/styles.css --style compressed
+      '
+    networks:
+      - caritas_dev
+    depends_on:
+      db:
+        condition: service_healthy
