@@ -1,24 +1,23 @@
 networks:
-  caritas_dev:
-    name: caritas_dev
+  project_dev:
+    name: project_dev
     attachable: true
 
 services:
   db:
     image: postgres:16.3-alpine
-    attach: false
     volumes:
       - ./postgres_data:/home/postgres/pgdata/data
       - ./:/home/postgres/workdir
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: caritas_dev
+      POSTGRES_DB: project_dev
     user: postgres
     networks:
-      - caritas_dev
+      - project_dev
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready", "-d", "${POSTGRES_DB}", "-u", "postgres"]
+      test: ["CMD-SHELL", "pg_isready", "-d", "project_dev", "-u", "postgres"]
       interval: 1s
       timeout: 5s
       retries: 10
@@ -33,16 +32,15 @@ services:
         RUN go install github.com/a-h/templ/cmd/templ@${TEMPL_VERSION}
         ENTRYPOINT wgo -file=.go -file=.templ -xfile=_templ.go TEMPL_EXPERIMENT=rawgo templ generate :: go run main.go
     attach: true
-    env_file: .env
     volumes:
       - ./:/project
     working_dir: /project
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_DB: project_dev
     ports:
       - "3000:3000"
     networks:
-      - caritas_dev
+      - project_dev
     links:
       - db
     depends_on:
@@ -74,7 +72,7 @@ services:
         /opt/dart-sass/sass --watch --no-source-map /project/styles.scss:/project/public/assets/css/styles.css --style compressed
       '
     networks:
-      - caritas_dev
+      - project_dev
     depends_on:
       db:
         condition: service_healthy

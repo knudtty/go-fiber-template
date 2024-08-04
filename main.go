@@ -1,21 +1,22 @@
 package main
 
 import (
-    "log"
+	"log"
 
-    "github.com/gofiber/fiber/v3"
+	"github.com/caritaspay/caritas/routers"
+	"github.com/goccy/go-json"
+	"github.com/gofiber/fiber/v3"
 )
 
 func main() {
-    // Initialize a new Fiber app
-    app := fiber.New()
+	// Initialize a new Fiber app
+	app := fiber.New(fiber.Config{
+		JSONEncoder: json.Marshal,
+		JSONDecoder: json.Unmarshal,
+	})
 
-    // Define a route for the GET method on the root path '/'
-    app.Get("/", func(c fiber.Ctx) error {
-        // Send a string response to the client
-        return c.SendString("Hello, World 👋!")
-    })
+	routers.Routes(app)
 
-    // Start the server on port 3000
-    log.Fatal(app.Listen(":3000"))
+	// Start the server on port 3000
+	log.Fatal(app.Listen(":3000", fiber.ListenConfig{EnablePrefork: true}))
 }
