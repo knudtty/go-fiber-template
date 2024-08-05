@@ -10,14 +10,14 @@ services:
       - ./postgres_data:/home/postgres/pgdata/data
       - ./:/home/postgres/workdir
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: project_dev
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     user: postgres
     networks:
       - project_dev
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready", "-d", "project_dev", "-u", "postgres"]
+      test: ["CMD-SHELL", "pg_isready", "-d", "${DB_NAME}", "-u", "${DB_USER}"]
       interval: 1s
       timeout: 5s
       retries: 10
@@ -35,8 +35,7 @@ services:
     volumes:
       - ./:/project
     working_dir: /project
-    environment:
-      POSTGRES_DB: project_dev
+    env_file: .env
     ports:
       - "3000:3000"
     networks:

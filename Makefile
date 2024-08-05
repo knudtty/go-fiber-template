@@ -1,4 +1,7 @@
-include $(shell if [ -f .env ]; then echo .env; else echo .env.example; fi)
+include $(shell echo .env)
+export DB_USER
+export DB_PASSWORD
+export DB_NAME
 
 TEMPL_VERSION     := v0.2.747
 export TEMPL_VERSION

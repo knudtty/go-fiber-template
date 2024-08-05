@@ -18,11 +18,14 @@ func Routes(app *fiber.App) {
 	app.Use(setBaseContext)
 
 	// TODO: Figure out a configuration strategy
-	if len(os.Getenv("API_ONLY")) > 0 {
-		api.Routes(app)
-	} else if len(os.Getenv("WEBSITE_ONLY")) > 0 {
+    switch os.Getenv("ROUTES_AVAILABLE") {
+    case "api":
+        api.Routes(app)
+        break
+    case "web":
 		web.Routes(app)
-	} else {
+        break
+    default:
 		apiGroup := app.Group("/api/v1")
 		api.Routes(apiGroup)
 		web.Routes(app)

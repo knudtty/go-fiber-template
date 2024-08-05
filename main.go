@@ -3,9 +3,11 @@ package main
 import (
 	"log"
 
+	"my_project/config"
+	"my_project/routers"
+
 	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v3"
-	"my_project/routers"
 )
 
 func main() {
@@ -15,6 +17,8 @@ func main() {
 		JSONDecoder: json.Unmarshal,
 	})
 
+	config.InitDb()
+
 	routers.Routes(app)
 
 	// Start the server on port 3000
@@ -23,13 +27,13 @@ func main() {
 		EnablePrintRoutes: true,
 	}))
 
-    // TODO: global config
-    // TODO: yaml config file
-    // TODO: db TODO app
-    // TODO: api TODO routes
-    // TODO: auto migrations
-    // TODO: oauth2 auth
-    // TODO: structured logging
-    // TODO: users, sessions, and roles in db
-    // TODO: JWT or sessions
+	// TODO: global config
+	// TODO: db TODO app
+	// TODO: db users
+	// TODO: api TODO routes
+	// TODO: auto migrations
+	// TODO: oauth2 auth
+	// TODO: structured logging
+	// TODO: users, sessions, and roles in db
+	// TODO: JWT or sessions
 }
