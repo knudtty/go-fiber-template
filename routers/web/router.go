@@ -3,8 +3,8 @@ package web
 import (
 	"log"
 
-	"github.com/caritaspay/caritas/routers/context"
-	"github.com/caritaspay/caritas/templates"
+	"my_project/routers/context"
+	"my_project/templates"
 	"github.com/gofiber/fiber/v3"
 )
 

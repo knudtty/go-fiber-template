@@ -3,9 +3,9 @@ package routers
 import (
 	"os"
 
-	"github.com/caritaspay/caritas/routers/api"
-	"github.com/caritaspay/caritas/routers/context"
-	"github.com/caritaspay/caritas/routers/web"
+	"my_project/routers/api"
+	"my_project/routers/context"
+	"my_project/routers/web"
 
 	"github.com/gofiber/fiber/v3"
 )

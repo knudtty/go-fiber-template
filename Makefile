@@ -1,7 +1,5 @@
 include $(shell if [ -f .env ]; then echo .env; else echo .env.example; fi)
 
-DOCKER_NETWORK    := caritas
-DB_URL 			  := db
 TEMPL_VERSION     := v0.2.747
 export TEMPL_VERSION
 BULMA_VERSION     := 1.0.2
