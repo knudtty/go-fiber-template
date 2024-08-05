@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"github.com/caritaspay/caritas/routers"
 	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v3"
+	"my_project/routers"
 )
 
 func main() {
@@ -18,5 +18,18 @@ func main() {
 	routers.Routes(app)
 
 	// Start the server on port 3000
-	log.Fatal(app.Listen(":3000", fiber.ListenConfig{EnablePrefork: true}))
+	log.Fatal(app.Listen(":3000", fiber.ListenConfig{
+		EnablePrefork:     true,
+		EnablePrintRoutes: true,
+	}))
+
+    // TODO: global config
+    // TODO: yaml config file
+    // TODO: db TODO app
+    // TODO: api TODO routes
+    // TODO: auto migrations
+    // TODO: oauth2 auth
+    // TODO: structured logging
+    // TODO: users, sessions, and roles in db
+    // TODO: JWT or sessions
 }
