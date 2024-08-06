@@ -13,12 +13,12 @@ $ make watch # command to start dev environment using docker compose
 ```
 
 ## TODOs
-- global config
 - db TODO app
 - db users
 - api TODO routes
-- auto migrations
+- api keys?
 - oauth2 auth
+- Swagger
 - structured logging
 - users, sessions, and roles in db
 - JWT or sessions

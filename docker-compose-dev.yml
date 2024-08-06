@@ -32,6 +32,19 @@ services:
       timeout: 5s
       retries: 10
 
+  migrate:
+    image: migrate/migrate:latest
+    volumes:
+      - ./platform/migrations:/migrations
+    networks:
+      - project_dev
+    links:
+      - db
+    depends_on:
+      db:
+        condition: service_healthy
+    command: -path=/migrations -database=postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}?sslmode=disable up
+
   templ:
     build:
       context: .
