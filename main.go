@@ -27,17 +27,4 @@ func main() {
 		EnablePrefork:     true,
 		EnablePrintRoutes: true,
 	}))
-
-	// TODO: global config
-	// TODO: db TODO app
-	// TODO: db users
-	// TODO: api TODO routes
-	// TODO: auto migrations
-	// TODO: oauth2 auth
-	// TODO: structured logging
-	// TODO: users, sessions, and roles in db
-	// TODO: JWT or sessions
-	// TODO: Ansible config
-	// TODO: github ci/cd
-    // TODO: Terraform
 }
