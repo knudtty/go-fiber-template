@@ -18,6 +18,7 @@ func main() {
 	})
 
 	config.InitDb()
+    config.InitCache()
 
 	routers.Routes(app)
 
@@ -36,4 +37,7 @@ func main() {
 	// TODO: structured logging
 	// TODO: users, sessions, and roles in db
 	// TODO: JWT or sessions
+	// TODO: Ansible config
+	// TODO: github ci/cd
+    // TODO: Terraform
 }

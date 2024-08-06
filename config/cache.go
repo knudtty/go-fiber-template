@@ -1,9 +1,27 @@
 package config
 
-import "github.com/redis/go-redis/v9"
+import (
+	"context"
+	"log"
+	"os"
+	"strconv"
 
-var Cache *redis.Client
+	"github.com/redis/go-redis/v9"
+)
+
+var Redis *redis.Client
 
 func InitCache() {
-    // TODO: Initialize Redis client
+	dbNum, _ := strconv.Atoi(os.Getenv("REDIS_DB_NUMBER"))
+
+	Redis = redis.NewClient(&redis.Options{
+		Addr:     os.Getenv("REDIS_HOST") + ":" + os.Getenv("REDIS_PORT"),
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       dbNum, // use default DB
+	})
+
+	status := Redis.Ping(context.Background())
+	if _, err := status.Result(); err != nil {
+		log.Fatalln("Error connecting to redis:", err)
+	}
 }
