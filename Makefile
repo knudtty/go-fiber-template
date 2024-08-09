@@ -1,27 +1,24 @@
 include $(shell echo .env)
+TEMPL_VERSION     := v0.2.747
+BULMA_VERSION     := 1.0.2
 export DB_USER
 export DB_PASSWORD
 export DB_NAME
-
-TEMPL_VERSION     := v0.2.747
 export TEMPL_VERSION
-BULMA_VERSION     := 1.0.2
 export BULMA_VERSION
-ifeq ($(SERVER_NAME),localhost)
-	NGINX_CONF := ./nginx/developent.conf.template
-else
-	NGINX_CONF := ./nginx/production.conf.template
-endif
 
 watch:
 	docker-compose -f docker-compose-dev.yml up --build --remove-orphans
-watch-down:
+watch.down:
 	docker-compose -f docker-compose-dev.yml down
-up:
-	docker-compose up --build -d --remove-orphans
-down:
-	docker-compose down
 update:
-	go get -u github.com/a-h/templ
-	go get -u github.com/gofiber/fiber/v3
+	go get -u
 	go mod tidy
+
+DSN:=postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSL_MODE)
+migrate.up:
+	docker run --rm -it -v ./platform/migrations:/migrations migrate/migrate -path=/migrations/ -database $(DSN) up
+migrate.down:
+	docker run --rm -it -v ./platform/migrations:/migrations migrate/migrate -path=/migrations/ -database $(DSN) down
+psql:
+	docker exec -it go-fiber-template-db-1 psql $(DSN)
