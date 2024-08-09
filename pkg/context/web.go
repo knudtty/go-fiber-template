@@ -10,7 +10,7 @@ type WebCtx struct {
 
 func NewWebContext(base *Base) *WebCtx {
 	return &WebCtx{
-        Base: base,
+		Base: base,
 	}
 }
 

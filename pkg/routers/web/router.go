@@ -3,9 +3,9 @@ package web
 import (
 	"log"
 
-	"my_project/routers/context"
-	"my_project/templates"
 	"github.com/gofiber/fiber/v3"
+	"my_project/pkg/context"
+	"my_project/templates"
 )
 
 func WrapWeb(f func(*context.WebCtx) error) fiber.Handler {

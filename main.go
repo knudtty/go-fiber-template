@@ -3,8 +3,9 @@ package main
 import (
 	"log"
 
-	"my_project/config"
-	"my_project/routers"
+	"my_project/pkg/routers"
+	"my_project/platform/cache"
+	"my_project/platform/database"
 
 	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v3"
@@ -17,8 +18,8 @@ func main() {
 		JSONDecoder: json.Unmarshal,
 	})
 
-	config.InitDb()
-    config.InitCache()
+	database.Init()
+	cache.Init()
 
 	routers.Routes(app)
 

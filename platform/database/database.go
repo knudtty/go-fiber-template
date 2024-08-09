@@ -1,4 +1,4 @@
-package config
+package database
 
 import (
 	"log"
@@ -12,7 +12,7 @@ import (
 
 var DB *sqlx.DB
 
-func InitDb() {
+func Init() {
 	var err error
 	dsn := "postgres://" +
 		os.Getenv("DB_USER") + ":" +

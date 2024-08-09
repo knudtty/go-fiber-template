@@ -3,8 +3,8 @@ package api
 import (
 	"log"
 
-	"my_project/routers/context"
 	"github.com/gofiber/fiber/v3"
+	"my_project/pkg/context"
 )
 
 func Routes(app fiber.Router) {
