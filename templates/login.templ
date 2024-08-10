@@ -1,5 +1,9 @@
 package templates
 
+import "my_project/templates/components"
+
 templ Login() {
-    <div></div>
+	@components.Page("Login") {
+		<div></div>
+	}
 }

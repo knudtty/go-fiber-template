@@ -1,7 +1,11 @@
 package templates
 
+import "my_project/templates/components"
+
 templ Home() {
-	<div>
-		Hello World!
-	</div>
+	@components.Page("Home") {
+		<div>
+			Hello World!
+		</div>
+	}
 }
