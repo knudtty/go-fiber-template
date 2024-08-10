@@ -1,7 +1,7 @@
 package database
 
 import (
-	"log"
+	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -10,10 +10,13 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-var DB *sqlx.DB
+var db *sqlx.DB
 
-func Init() {
-	var err error
+func PostgresDbConnection() (*sqlx.DB, error) {
+	if db != nil {
+		return db, nil
+	}
+
 	dsn := "postgres://" +
 		os.Getenv("DB_USER") + ":" +
 		os.Getenv("DB_PASSWORD") + "@" +
@@ -22,21 +25,24 @@ func Init() {
 		os.Getenv("DB_NAME") + "?sslmode=" +
 		os.Getenv("DB_SSL_MODE")
 
-	DB, err = sqlx.Connect("pgx", dsn)
+	sqlxConn, err := sqlx.Connect("pgx", dsn)
 	if err != nil {
-		log.Fatalln(err)
+        return nil, fmt.Errorf("Error connecting to db: %s", err)
 	}
+	db = sqlxConn
 
 	maxIdleConns, _ := strconv.Atoi(os.Getenv("DB_MAX_IDLE_CONNS"))
 	maxConns, _ := strconv.Atoi(os.Getenv("DB_MAX_CONNS"))
 	maxConnLifetime, _ := strconv.Atoi(os.Getenv("DB_MAX_CONN_LIFETIME"))
 
-	DB.SetMaxIdleConns(maxIdleConns)
-	DB.SetMaxOpenConns(maxConns)
-	DB.SetConnMaxLifetime(time.Duration(maxConnLifetime))
+	db.SetMaxIdleConns(maxIdleConns)
+	db.SetMaxOpenConns(maxConns)
+	db.SetConnMaxLifetime(time.Duration(maxConnLifetime))
 
-	if err = DB.Ping(); err != nil {
-		DB.Close()
-		log.Fatal("Failed to ping db", err)
+	if err = db.Ping(); err != nil {
+		defer db.Close()
+		return nil, fmt.Errorf("Failed to ping db: %s\n", err)
 	}
+
+	return db, nil
 }

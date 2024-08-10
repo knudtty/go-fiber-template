@@ -4,11 +4,9 @@ import (
 	"log"
 
 	"my_project/pkg/routers"
-	"my_project/platform/cache"
-	"my_project/platform/database"
 
 	"github.com/goccy/go-json"
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 )
 
 func main() {
@@ -16,16 +14,12 @@ func main() {
 	app := fiber.New(fiber.Config{
 		JSONEncoder: json.Marshal,
 		JSONDecoder: json.Unmarshal,
+        Prefork: true,
+        EnablePrintRoutes: true,
 	})
-
-	database.Init()
-	cache.Init()
 
 	routers.Routes(app)
 
 	// Start the server on port 3000
-	log.Fatal(app.Listen(":3000", fiber.ListenConfig{
-		EnablePrefork:     true,
-		EnablePrintRoutes: true,
-	}))
+	log.Fatal(app.Listen(":3000"))
 }

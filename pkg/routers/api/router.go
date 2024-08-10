@@ -3,7 +3,7 @@ package api
 import (
 	"log"
 
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 	"my_project/pkg/context"
 )
 
@@ -18,7 +18,7 @@ func Routes(app fiber.Router) {
 }
 
 func WrapApi(f func(*context.ApiCtx) error) fiber.Handler {
-	return func(ctx fiber.Ctx) error {
+	return func(ctx *fiber.Ctx) error {
 		apiCtx, ok := ctx.UserContext().Value("myCtx").(*context.ApiCtx)
 		if !ok {
 			log.Fatal("apiCtx not found")
@@ -27,7 +27,7 @@ func WrapApi(f func(*context.ApiCtx) error) fiber.Handler {
 	}
 }
 
-func setApiContext(ctx fiber.Ctx) error {
+func setApiContext(ctx *fiber.Ctx) error {
 	baseCtx, ok := ctx.UserContext().Value("myCtx").(*context.Base)
 	if !ok {
 		log.Fatalf("myCtx base not found for api on route %s", ctx.Route().Path)

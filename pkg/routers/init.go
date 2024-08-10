@@ -3,11 +3,11 @@ package routers
 import (
 	"os"
 
-	"my_project/pkg/context"
+	ctx "my_project/pkg/context"
 	"my_project/pkg/routers/api"
 	"my_project/pkg/routers/web"
 
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 )
 
 type Router struct {
@@ -32,8 +32,8 @@ func Routes(app *fiber.App) {
 	}
 }
 
-func setBaseContext(ctx fiber.Ctx) error {
-	baseCtx := context.NewBaseContext(ctx)
+func setBaseContext(c *fiber.Ctx) error {
+	baseCtx := ctx.NewBaseContext(c)
 	baseCtx.SetContext("myCtx", baseCtx)
 	return baseCtx.Next()
 }

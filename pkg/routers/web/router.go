@@ -3,14 +3,17 @@ package web
 import (
 	"log"
 
-	"github.com/gofiber/fiber/v3"
-	"my_project/pkg/context"
+	"my_project/app/controllers"
+	ctx "my_project/pkg/context"
+	"my_project/pkg/middleware"
 	"my_project/templates"
+
+	"github.com/gofiber/fiber/v2"
 )
 
-func WrapWeb(f func(*context.WebCtx) error) fiber.Handler {
-	return func(ctx fiber.Ctx) error {
-		webCtx, ok := ctx.UserContext().Value("myCtx").(*context.WebCtx)
+func WrapWeb(f func(*ctx.WebCtx) error) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		webCtx, ok := c.UserContext().Value("myCtx").(*ctx.WebCtx)
 		if !ok {
 			log.Fatal("webCtx not found")
 		}
@@ -20,17 +23,33 @@ func WrapWeb(f func(*context.WebCtx) error) fiber.Handler {
 
 func Routes(app fiber.Router) {
 	app.Use(setWebContext)
-	app.Get("/", WrapWeb(func(c *context.WebCtx) error {
-		return c.Render(templates.Home())
-	}))
+	publicRoutes(app)
+	privateRoutes(app)
 }
 
-func setWebContext(ctx fiber.Ctx) error {
-	baseCtx, ok := ctx.UserContext().Value("myCtx").(*context.Base)
+func setWebContext(c *fiber.Ctx) error {
+	baseCtx, ok := c.UserContext().Value("myCtx").(*ctx.Base)
 	if !ok {
 		log.Fatal("myCtx base not found for web")
 	}
-	webCtx := context.NewWebContext(baseCtx)
+	webCtx := ctx.NewWebContext(baseCtx)
 	baseCtx.SetContext("myCtx", webCtx)
 	return baseCtx.Next()
+}
+
+func publicRoutes(app fiber.Router) {
+	app.Get("/", WrapWeb(func(c *ctx.WebCtx) error {
+		return c.Render(templates.Home())
+	}))
+
+	app.Get("/login", WrapWeb(func(c *ctx.WebCtx) error {
+		return c.Render(templates.Login())
+	}))
+	authGroup := app.Group("/auth")
+	authGroup.Get("/session", WrapWeb(controllers.CreateSession))
+    authGroup.Get("/redirect", WrapWeb(controllers.AuthRedirectFromProvider))
+}
+
+func privateRoutes(app fiber.Router) {
+    app.Use(middleware.JWTProtected())
 }

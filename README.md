@@ -13,7 +13,7 @@ $ make watch # command to start dev environment using docker compose
 ```
 
 ## TODOs
-- oauth2 auth
+- login auth
 - github ci/cd
 - db TODO migration
 - api TODO routes
