@@ -1,11 +1,13 @@
 package controllers
 
 import (
-	"fmt"
 	"log"
 
 	ctx "my_project/pkg/context"
 	"my_project/pkg/utils"
+	"my_project/platform/database"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 func UserSignUp(c *ctx.ApiCtx) error {
@@ -13,15 +15,46 @@ func UserSignUp(c *ctx.ApiCtx) error {
 }
 
 func AuthRedirectFromProvider(c *ctx.WebCtx) error {
-	var providerUrl string
-	oauth2Token, err := utils.GetOAuthToken(c.Base, providerUrl)
+	oauth2Token, provider, err := utils.GetOAuthToken(c.Base)
 	if err != nil {
-		c.Status(400).Redirect("/login")
+		log.Println("Couldn't get oauth token", err)
+		return c.Status(400).Redirect("/login")
 	}
 
-	// TODO: Store into JWT
-	fmt.Println(oauth2Token)
-	return nil
+	user, err := utils.GetOrCreateUser(oauth2Token, provider)
+	if err != nil {
+		log.Println("Couldn't get user info: ", err)
+		return c.Status(400).Redirect("/login")
+	}
+
+	tokens, err := utils.GenerateNewTokens(user)
+	if err != nil {
+		log.Println("Couldn't generate token: ", err)
+		return c.Status(400).Redirect("/login")
+	}
+
+	store, err := database.GetDbConnection()
+	err = store.UpdateUserRefreshToken(user.ID, tokens.Refresh)
+	if err != nil {
+		log.Println("Couldn't update refresh token: ", err)
+		return c.Status(400).Redirect("/login")
+	}
+
+    err = store.SetUserOAuthTokens(oauth2Token.AccessToken, oauth2Token.RefreshToken)
+	if err != nil {
+		log.Println("Couldn't set refresh and access tokens: ", err)
+		return c.Status(400).Redirect("/login")
+	}
+
+	c.Cookie(&fiber.Cookie{
+		Name:     "sessn-jwt",
+		Value:    tokens.Access,
+		HTTPOnly: true,
+		Secure:   true,
+		SameSite: fiber.CookieSameSiteLaxMode,
+	})
+
+	return c.Status(fiber.StatusOK).Redirect("/")
 }
 
 type loginQueryParams struct {
@@ -33,14 +66,14 @@ type loginQueryParams struct {
 // Creates session by username and password or oauth
 func CreateSession(c *ctx.WebCtx) error {
 	qp := new(loginQueryParams)
-    if err := c.QueryParser(qp); err != nil {
-        log.Println("Error parsing login query: ", err)
-        return err
-    }
+	if err := c.QueryParser(qp); err != nil {
+		log.Println("Error parsing login query: ", err)
+		return err
+	}
 
-    if qp.provider != "" {
-        return utils.RedirectToProvider(c.Ctx, qp.provider)
-    } else {
-        return nil //TODO: Log in with username and password
-    }
+	if qp.provider != "" {
+		return utils.RedirectToProvider(c.Ctx, qp.provider)
+	} else {
+		return nil //TODO: Log in with username and password
+	}
 }

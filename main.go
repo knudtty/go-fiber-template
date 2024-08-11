@@ -12,10 +12,10 @@ import (
 func main() {
 	// Initialize a new Fiber app
 	app := fiber.New(fiber.Config{
-		JSONEncoder: json.Marshal,
-		JSONDecoder: json.Unmarshal,
-        Prefork: true,
-        EnablePrintRoutes: true,
+		JSONEncoder:       json.Marshal,
+		JSONDecoder:       json.Unmarshal,
+		Prefork:           true,
+		EnablePrintRoutes: true,
 	})
 
 	routers.Routes(app)

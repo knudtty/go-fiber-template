@@ -13,7 +13,10 @@ $ make watch # command to start dev environment using docker compose
 ```
 
 ## TODOs
-- login auth
+- Sync user model with DB
+- Make user and oauth_account models available in WebCtx
+- Make HTMX login page
+- Test JWT login
 - github ci/cd
 - db TODO migration
 - api TODO routes
@@ -21,6 +24,6 @@ $ make watch # command to start dev environment using docker compose
 - Swagger
 - structured logging
 - users, sessions, and roles in db
-- JWT or sessions
+- login auth
 - Ansible config
 - Terraform

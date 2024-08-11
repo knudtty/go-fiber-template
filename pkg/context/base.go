@@ -2,19 +2,15 @@ package context
 
 import (
 	"context"
+	"my_project/app/models"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-type User struct {
-	Email string
-	Role  string
-}
-
 type Base struct {
 	*fiber.Ctx
-	Doer *User
+	Doer *models.User
 }
 
 func NewBaseContext(c *fiber.Ctx) *Base {

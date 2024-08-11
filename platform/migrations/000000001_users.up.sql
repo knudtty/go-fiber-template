@@ -2,12 +2,13 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TYPE auth_providers AS ENUM ('github', 'google');
+
 -- Create users table
 CREATE TABLE users (
     id UUID DEFAULT uuid_generate_v4 () PRIMARY KEY,
     email VARCHAR (255) NOT NULL UNIQUE,
     password_hash VARCHAR (255),
-    user_type INT NOT NULL,
+    refresh_token TEXT,
     user_status INT NOT NULL,
     user_role VARCHAR (25) NOT NULL,
     created_at TIMESTAMP DEFAULT NOW (),
@@ -17,7 +18,7 @@ CREATE TABLE users (
 CREATE TABLE oauth_accounts (
     id SERIAL PRIMARY KEY,
     user_id UUID NOT NULL,
-    provider VARCHAR(50) NOT NULL,
+    provider auth_providers NOT NULL,
     provider_user_id VARCHAR(255) NOT NULL,
     access_token TEXT,
     refresh_token TEXT,

@@ -28,12 +28,10 @@ var (
 func GetOAuthConfig(identifier string) (oauth2.Config, error) {
 	switch identifier {
 	case "google":
-        return githubOAuthConfig, nil
+		return githubOAuthConfig, nil
 	case "github":
-        return googleOAuthConfig, nil
+		return googleOAuthConfig, nil
 	default:
-        return oauth2.Config{}, fmt.Errorf("Error: OAuth not valid")
+		return oauth2.Config{}, fmt.Errorf("Error: OAuth not valid")
 	}
 }
-
-// Configure an OpenID Connect aware OAuth2 client.

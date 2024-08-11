@@ -47,9 +47,9 @@ func publicRoutes(app fiber.Router) {
 	}))
 	authGroup := app.Group("/auth")
 	authGroup.Get("/session", WrapWeb(controllers.CreateSession))
-    authGroup.Get("/redirect", WrapWeb(controllers.AuthRedirectFromProvider))
+	authGroup.Get("/redirect", WrapWeb(controllers.AuthRedirectFromProvider))
 }
 
 func privateRoutes(app fiber.Router) {
-    app.Use(middleware.JWTProtected())
+	app.Use(middleware.JWTProtected())
 }
