@@ -4,6 +4,7 @@ import (
 	"os"
 
 	ctx "my_project/pkg/context"
+	"my_project/pkg/middleware"
 	"my_project/pkg/routers/api"
 	"my_project/pkg/routers/web"
 
@@ -15,6 +16,7 @@ type Router struct {
 }
 
 func Routes(app *fiber.App) {
+	app.Use(middleware.JWTParser())
 	app.Use(setBaseContext)
 
 	// TODO: Figure out a configuration strategy

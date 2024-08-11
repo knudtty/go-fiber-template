@@ -14,9 +14,13 @@ type Base struct {
 }
 
 func NewBaseContext(c *fiber.Ctx) *Base {
-	return &Base{
+	b := &Base{
 		Ctx: c,
 	}
+	if user, ok := b.GetContext("user_data").(models.User); ok {
+		b.Doer = &user
+	}
+	return b
 }
 
 func (b *Base) SetContext(key string, val any) {

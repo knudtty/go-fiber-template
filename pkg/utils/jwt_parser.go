@@ -1,11 +1,11 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"my_project/app/models"
 	"os"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
@@ -16,13 +16,8 @@ type TokenMetadata struct {
 	Expires int64
 }
 
-// ExtractTokenMetadata func to extract metadata from JWT.
-func ExtractTokenMetadata(c *fiber.Ctx) (*TokenMetadata, error) {
-	token, err := verifyToken(c)
-	if err != nil {
-		return nil, err
-	}
-
+// ExtractVerifiedTokenMetadata func to extract metadata from JWT.
+func ExtractVerifiedTokenMetadata(token *jwt.Token) (*TokenMetadata, error) {
 	// Setting and checking token and credentials.
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if ok && token.Valid {
@@ -60,12 +55,11 @@ func ExtractTokenMetadata(c *fiber.Ctx) (*TokenMetadata, error) {
 		}, nil
 	}
 
-	return nil, err
+	return nil, errors.New("Cannot extract metadata from invalid jwt")
 }
 
-func verifyToken(c *fiber.Ctx) (*jwt.Token, error) {
-	tokenString := c.Cookies("sess-jwt")
-
+// Not currently using, here if needed
+func verifyToken(tokenString string) (*jwt.Token, error) {
 	token, err := jwt.Parse(tokenString, jwtKeyFunc)
 	if err != nil {
 		return nil, err

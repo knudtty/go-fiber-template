@@ -40,7 +40,7 @@ func AuthRedirectFromProvider(c *ctx.WebCtx) error {
 		return c.Status(400).Redirect("/login")
 	}
 
-    err = store.SetUserOAuthTokens(oauth2Token.AccessToken, oauth2Token.RefreshToken, oauth2Token.Expiry)
+	err = store.SetUserOAuthTokens(oauth2Token.AccessToken, oauth2Token.RefreshToken, oauth2Token.Expiry)
 	if err != nil {
 		log.Println("Couldn't set refresh and access tokens: ", err)
 		return c.Status(400).Redirect("/login")

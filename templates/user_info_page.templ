@@ -1,0 +1,15 @@
+package templates
+
+import "my_project/app/models"
+
+templ UserInfoPage() {
+    {{ 
+        user := ctx.Value("user_data").(models.User) 
+    }}
+    <label><b>Email:</b></label>
+    <p>{ user.Email }</p>
+    <label><b>ID:</b></label>
+    <p>{ user.ID.String() }</p>
+    <label><b>Role:</b></label>
+    <p>{ user.UserRole }</p>
+}

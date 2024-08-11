@@ -57,6 +57,7 @@ services:
     attach: true
     volumes:
       - ./:/project
+      - ${HOME}/go/pkg/mod:/go/pkg/mod
     working_dir: /project
     env_file: .env
     ports:

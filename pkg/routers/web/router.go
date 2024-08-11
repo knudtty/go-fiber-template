@@ -11,6 +11,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+func Routes(app fiber.Router) {
+	app.Use(setWebContext)
+	publicRoutes(app)
+	privateRoutes(app)
+}
+
 func WrapWeb(f func(*ctx.WebCtx) error) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		webCtx, ok := c.UserContext().Value("myCtx").(*ctx.WebCtx)
@@ -19,12 +25,6 @@ func WrapWeb(f func(*ctx.WebCtx) error) fiber.Handler {
 		}
 		return f(webCtx)
 	}
-}
-
-func Routes(app fiber.Router) {
-	app.Use(setWebContext)
-	publicRoutes(app)
-	privateRoutes(app)
 }
 
 func setWebContext(c *fiber.Ctx) error {
@@ -51,5 +51,6 @@ func publicRoutes(app fiber.Router) {
 }
 
 func privateRoutes(app fiber.Router) {
-	app.Use(middleware.JWTProtected())
+	app.Use(WrapWeb(middleware.AuthenticatedUser))
+	app.Get("/userinfo", WrapWeb(controllers.UserInfo))
 }

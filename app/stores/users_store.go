@@ -29,24 +29,24 @@ func (us *UsersStore) GetUserByProviderId(providerId string) (*models.User, erro
 }
 
 func (us *UsersStore) CreateOAuthUser(providerId, provider, email, role string) (*models.User, error) {
-    tx, err := us.DB.BeginTx(context.Background(), nil)
-    if err != nil {
-        return nil, err
-    }
+	tx, err := us.DB.BeginTx(context.Background(), nil)
+	if err != nil {
+		return nil, err
+	}
 
-    _, err = tx.Exec("INSERT INTO users (email, user_status, user_role) VALUES ($1, 1, $2)", email, role)
-    if err != nil {
-        return nil, err
-    }
+	_, err = tx.Exec("INSERT INTO users (email, user_status, user_role) VALUES ($1, 1, $2)", email, role)
+	if err != nil {
+		return nil, err
+	}
 
-    _, err = tx.Exec("INSERT INTO oauth_accounts (user_id, provider, provider_user_id) VALUES ((SELECT id FROM users WHERE email = $1), $2, $3)", email, provider, providerId)
-    if err != nil {
-        return nil, err
-    }
+	_, err = tx.Exec("INSERT INTO oauth_accounts (user_id, provider, provider_user_id) VALUES ((SELECT id FROM users WHERE email = $1), $2, $3)", email, provider, providerId)
+	if err != nil {
+		return nil, err
+	}
 
-    if err := tx.Commit(); err != nil {
-        return nil, err
-    }
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
 
 	return us.GetUserByProviderId(providerId)
 }

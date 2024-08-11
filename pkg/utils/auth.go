@@ -52,7 +52,7 @@ func RedirectToProvider(c *fiber.Ctx, provider string) error {
 func GetOAuthToken(c *ctx.Base) (*oauth2.Token, string, error) {
 	var oauthState OAuth2State
 
-	stateQuery := c.Query("oauthState")
+	stateQuery := c.Query("state")
 	stateCookie := c.Cookies(pendingAuth)
 	c.ClearCookie(pendingAuth)
 
@@ -95,9 +95,9 @@ func GetOrCreateUser(oauth2Token *oauth2.Token, provider string) (*models.User, 
 	default:
 		return nil, fmt.Errorf("Couldn't find provider %v", provider)
 	}
-    if err != nil {
-        return nil, fmt.Errorf("Couldn't get id and email from provider %s: %s ", provider, err)
-    }
+	if err != nil {
+		return nil, fmt.Errorf("Couldn't get id and email from provider %s: %s ", provider, err)
+	}
 
 	db, err := database.GetDbConnection()
 	if err != nil {
@@ -128,12 +128,12 @@ func getGithubInfo(client *http.Client) (string, string, error) {
 		Email string `json:"email"`
 	}
 
-    type githubEmail struct {
-		Email string `json:"email"`
-        Primary bool `json:"primary"`
-    }
+	type githubEmail struct {
+		Email   string `json:"email"`
+		Primary bool   `json:"primary"`
+	}
 
-    // Get Id
+	// Get Id
 	res, err := client.Get("https://api.github.com/user")
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
@@ -141,21 +141,21 @@ func getGithubInfo(client *http.Client) (string, string, error) {
 	}
 
 	if res.StatusCode != http.StatusOK {
-        return "", "", fmt.Errorf("getGithubInfo: Github API request failed %s", res.Status)
+		return "", "", fmt.Errorf("getGithubInfo: Github API request failed %s", res.Status)
 	}
 
 	var id githubId
 	err = json.Unmarshal(body, &id)
 	if err != nil {
-        return "", "", fmt.Errorf("getGithubInfo: failed to unmarshal: %s", err)
+		return "", "", fmt.Errorf("getGithubInfo: failed to unmarshal: %s", err)
 	}
 
-    if id.Email != "" {
-        // Email was included in user query, return now
-        return strconv.Itoa(id.Id), id.Email, nil
-    }
+	if id.Email != "" {
+		// Email was included in user query, return now
+		return strconv.Itoa(id.Id), id.Email, nil
+	}
 
-    // Email was not returned in user query, must use emails endpoint
+	// Email was not returned in user query, must use emails endpoint
 	res, err = client.Get("https://api.github.com/user/emails")
 	body, err = io.ReadAll(res.Body)
 	if err != nil {
@@ -163,22 +163,22 @@ func getGithubInfo(client *http.Client) (string, string, error) {
 	}
 
 	var emails []githubEmail
-    var email string
+	var email string
 
 	err = json.Unmarshal(body, &emails)
 	if err != nil {
-        return "", "", fmt.Errorf("getGithubInfo: failed to unmarshal: %s", err)
+		return "", "", fmt.Errorf("getGithubInfo: failed to unmarshal: %s", err)
 	}
 
-    for _, e := range emails {
-        if e.Primary {
-            email = e.Email
-            break
-        }
-    }
-    if email == "" {
-        return "", "", fmt.Errorf("getGithubInfo: No primary email found: %s", err)
-    }
+	for _, e := range emails {
+		if e.Primary {
+			email = e.Email
+			break
+		}
+	}
+	if email == "" {
+		return "", "", fmt.Errorf("getGithubInfo: No primary email found: %s", err)
+	}
 
 	return strconv.Itoa(id.Id), email, nil
 }
