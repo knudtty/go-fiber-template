@@ -4,6 +4,12 @@ import "my_project/templates/components"
 
 templ Login() {
 	@components.Page("Login") {
+		<form>
+			<label>Username</label>
+			<input type="text"/>
+			<label>Password</label>
+			<input type="password"/>
+		</form>
 		<a href="/auth/session?provider=github">
 			<button>Github</button>
 		</a>

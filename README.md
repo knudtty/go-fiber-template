@@ -1,9 +1,9 @@
 # Go Fiber Template
 
-This is a full featured starting point for a go web service. It focuses on
-maintainable, sensible patterns, low allocations, fast execution, and scalable
-infrastructure. Clone this template, run `make watch`, and visit localhost:3000
-from your browser
+This is a full featured starting point for a full stack web service. It focuses
+on maintainable, sensible patterns, low allocations, fast execution, and
+scalable infrastructure. Clone this template, run `make watch`, and visit
+localhost:3000 from your browser
 
 ## Getting Started
 
@@ -14,7 +14,6 @@ $ make watch # command to start dev environment using docker compose
 
 ## TODOs
 - Make user and oauth_account models available in WebCtx
-- Make HTMX login page
 - Test JWT login
 - github ci/cd
 - db TODO migration
