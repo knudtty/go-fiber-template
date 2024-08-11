@@ -12,14 +12,14 @@ var (
 	githubOAuthConfig = oauth2.Config{
 		ClientID:     os.Getenv("GITHUB_CLIENT_ID"),
 		ClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
-		RedirectURL:  "/auth/callback",
+		RedirectURL:  os.Getenv("APP_HOST") + "/auth/redirect",
 		Endpoint:     endpoints.GitHub,
-		Scopes:       []string{"profile", "email", "offline_access"},
+		Scopes:       []string{"read:user", "user:email"},
 	}
 	googleOAuthConfig = oauth2.Config{
 		ClientID:     os.Getenv("GITHUB_CLIENT_ID"),
 		ClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
-		RedirectURL:  "/auth/callback",
+		RedirectURL:  os.Getenv("APP_HOST") + "/auth/redirect",
 		Endpoint:     endpoints.Google,
 		Scopes:       []string{"profile", "email", "offline_access"},
 	}
@@ -27,9 +27,9 @@ var (
 
 func GetOAuthConfig(identifier string) (oauth2.Config, error) {
 	switch identifier {
-	case "google":
-		return githubOAuthConfig, nil
 	case "github":
+		return githubOAuthConfig, nil
+	case "google":
 		return googleOAuthConfig, nil
 	default:
 		return oauth2.Config{}, fmt.Errorf("Error: OAuth not valid")

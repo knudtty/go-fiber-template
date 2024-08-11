@@ -4,6 +4,11 @@ import "my_project/templates/components"
 
 templ Login() {
 	@components.Page("Login") {
-		<div></div>
+		<a href="/auth/session?provider=github">
+			<button>Github</button>
+		</a>
+		<a href="/auth/session?provider=google">
+			<button>Google</button>
+		</a>
 	}
 }

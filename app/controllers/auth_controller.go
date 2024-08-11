@@ -58,9 +58,9 @@ func AuthRedirectFromProvider(c *ctx.WebCtx) error {
 }
 
 type loginQueryParams struct {
-	provider string `form:"provider"`
-	username string `form:"username"`
-	password string `form:"password"`
+	Provider string `form:"provider"`
+	Username string `form:"username"`
+	Password string `form:"password"`
 }
 
 // Creates session by username and password or oauth
@@ -71,8 +71,8 @@ func CreateSession(c *ctx.WebCtx) error {
 		return err
 	}
 
-	if qp.provider != "" {
-		return utils.RedirectToProvider(c.Ctx, qp.provider)
+	if qp.Provider != "" {
+		return utils.RedirectToProvider(c.Ctx, qp.Provider)
 	} else {
 		return nil //TODO: Log in with username and password
 	}

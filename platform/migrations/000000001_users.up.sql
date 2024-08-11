@@ -7,12 +7,12 @@ CREATE TYPE auth_providers AS ENUM ('github', 'google');
 CREATE TABLE users (
     id UUID DEFAULT uuid_generate_v4 () PRIMARY KEY,
     email VARCHAR (255) NOT NULL UNIQUE,
-    password_hash VARCHAR (255),
-    refresh_token TEXT,
+    password_hash VARCHAR (255) NOT NULL DEFAULT '',
+    refresh_token TEXT NOT NULL DEFAULT '',
     user_status INT NOT NULL,
     user_role VARCHAR (25) NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW (),
-    updated_at TIMESTAMP NULL
+    created_at TIMESTAMP NOT NULL DEFAULT NOW (),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE oauth_accounts (
@@ -20,11 +20,11 @@ CREATE TABLE oauth_accounts (
     user_id UUID NOT NULL UNIQUE,
     provider auth_providers NOT NULL,
     provider_user_id VARCHAR(255) NOT NULL,
-    access_token TEXT,
-    refresh_token TEXT,
-    expires_at TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    access_token TEXT NOT NULL DEFAULT '',
+    refresh_token TEXT NOT NULL DEFAULT '',
+    expires_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE (provider, provider_user_id)
 );

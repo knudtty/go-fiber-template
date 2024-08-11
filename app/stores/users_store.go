@@ -1,6 +1,7 @@
 package stores
 
 import (
+	"context"
 	"my_project/app/models"
 	"time"
 
@@ -13,9 +14,10 @@ type UsersStore struct {
 }
 
 func (us *UsersStore) GetUserByProviderId(providerId string) (*models.User, error) {
-	user := models.User{}
+	var user models.User
+
 	err := us.DB.Get(&user, `
-        SELECT * FROM users
+        SELECT users.* FROM users
             JOIN oauth_accounts oa ON oa.user_id = users.id
             WHERE oa.provider_user_id = $1
     `, providerId)
@@ -27,22 +29,26 @@ func (us *UsersStore) GetUserByProviderId(providerId string) (*models.User, erro
 }
 
 func (us *UsersStore) CreateOAuthUser(providerId, provider, email, role string) (*models.User, error) {
-	user := models.User{}
-	err := us.DB.Get(&user, `
-        WITH new_user AS (
-            INSERT INTO users (email, user_status, user_role)
-            VALUES ($1, 1, $2)
-            RETURNING id
-        )
-        INSERT INTO oauth_accounts (user_id, provider, provider_user_id)
-        SELECT id, $3, $4 FROM new_user
-        RETURNING *;
-    `, email, role, provider, providerId)
-	if err != nil {
-		return nil, err
-	}
+    tx, err := us.DB.BeginTx(context.Background(), nil)
+    if err != nil {
+        return nil, err
+    }
 
-	return &user, nil
+    _, err = tx.Exec("INSERT INTO users (email, user_status, user_role) VALUES ($1, 1, $2)", email, role)
+    if err != nil {
+        return nil, err
+    }
+
+    _, err = tx.Exec("INSERT INTO oauth_accounts (user_id, provider, provider_user_id) VALUES ((SELECT id FROM users WHERE email = $1), $2, $3)", email, provider, providerId)
+    if err != nil {
+        return nil, err
+    }
+
+    if err := tx.Commit(); err != nil {
+        return nil, err
+    }
+
+	return us.GetUserByProviderId(providerId)
 }
 
 func (us *UsersStore) SetUserOAuthTokens(accessToken, refreshToken string, expiration time.Time) error {
