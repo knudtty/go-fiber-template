@@ -17,14 +17,14 @@ CREATE TABLE users (
 
 CREATE TABLE oauth_accounts (
     id SERIAL PRIMARY KEY,
-    user_id UUID NOT NULL,
+    user_id UUID NOT NULL UNIQUE,
     provider auth_providers NOT NULL,
     provider_user_id VARCHAR(255) NOT NULL,
     access_token TEXT,
     refresh_token TEXT,
-    expires_at TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE (provider, provider_user_id)
 );

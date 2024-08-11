@@ -13,7 +13,6 @@ $ make watch # command to start dev environment using docker compose
 ```
 
 ## TODOs
-- Sync user model with DB
 - Make user and oauth_account models available in WebCtx
 - Make HTMX login page
 - Test JWT login
