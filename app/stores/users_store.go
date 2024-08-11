@@ -2,6 +2,7 @@ package stores
 
 import (
 	"my_project/app/models"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -44,8 +45,8 @@ func (us *UsersStore) CreateOAuthUser(providerId, provider, email, role string) 
 	return &user, nil
 }
 
-func (us *UsersStore) SetUserOAuthTokens(accessToken, refreshToken string) error {
-	_, err := us.DB.Exec("UPDATE oauth_accounts SET access_token = $1, refresh_token = $2", accessToken, refreshToken)
+func (us *UsersStore) SetUserOAuthTokens(accessToken, refreshToken string, expiration time.Time) error {
+	_, err := us.DB.Exec("UPDATE oauth_accounts SET access_token = $1, refresh_token = $2, expires_at = $3, updated_at = NOW()", accessToken, refreshToken, expiration)
 	return err
 }
 
