@@ -4,6 +4,7 @@ go 1.22.5
 
 require (
 	github.com/a-h/templ v0.2.747
+	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/goccy/go-json v0.10.3
 	github.com/gofiber/contrib/jwt v1.0.10
@@ -32,6 +33,7 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
+	github.com/pquerna/cachecontrol v0.2.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
@@ -42,4 +44,5 @@ require (
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.24.0 // indirect
 	golang.org/x/text v0.17.0 // indirect
+	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 )

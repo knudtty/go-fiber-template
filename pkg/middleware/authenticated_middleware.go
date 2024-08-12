@@ -8,7 +8,7 @@ import (
 
 func AuthenticatedUser(c *ctx.WebCtx) error {
 	if c.Doer != nil {
-        // User is known
+		// User is known
 		return c.Next()
 	}
 
