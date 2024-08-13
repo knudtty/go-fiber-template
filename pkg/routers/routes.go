@@ -3,6 +3,7 @@ package routers
 import (
 	"os"
 
+	"my_project/app/state"
 	ctx "my_project/pkg/context"
 	"my_project/pkg/middleware"
 	"my_project/pkg/routers/api"
@@ -15,21 +16,21 @@ type Router struct {
 	r fiber.Router
 }
 
-func Routes(app *fiber.App) {
+func Routes(app *fiber.App, state *state.AppState) {
 	app.Use(middleware.JWTParser())
 	app.Use(setBaseContext)
 
 	switch os.Getenv("ROUTES_AVAILABLE") {
 	case "api":
-		api.Routes(app)
+		api.Routes(app, state)
 		break
 	case "web":
-		web.Routes(app)
+		web.Routes(app, state)
 		break
 	default:
 		apiGroup := app.Group("/api/v1")
-		api.Routes(apiGroup)
-		web.Routes(app)
+		api.Routes(apiGroup, state)
+		web.Routes(app, state)
 	}
 }
 

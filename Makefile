@@ -24,4 +24,4 @@ psql:
 	docker exec -it go-fiber-template-db-1 psql $(DSN)
 fmt:
 	go fmt ./...
-	templ fmt .
+	TEMPL_EXPERIMENT=rawgo templ fmt .

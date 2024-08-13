@@ -3,11 +3,13 @@ package api
 import (
 	"log"
 
-	"github.com/gofiber/fiber/v2"
+	"my_project/app/state"
 	"my_project/pkg/context"
+
+	"github.com/gofiber/fiber/v2"
 )
 
-func Routes(app fiber.Router) {
+func Routes(app fiber.Router, state *state.AppState) {
 	app.Use(setApiContext)
 
 	app.Get("/", WrapApi(func(ac *context.ApiCtx) error {
