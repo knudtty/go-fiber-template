@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"log"
+	"slices"
 
 	"my_project/app/models"
 	"my_project/pkg/configs"
@@ -17,6 +18,7 @@ import (
 )
 
 var pendingAuth = "pending-auth"
+var providers = []string{"github", "google"}
 
 type OAuth2State struct {
 	State    string `json:"oauthState"`
@@ -70,7 +72,7 @@ func GetOAuthToken(c *ctx.Base) (*oauth2.Token, string, error) {
 	return token, oauthState.Provider, err
 }
 
-func GetOrCreateUser(oauth2Token *oauth2.Token, provider string) (*models.User, error) {
+func GetOrCreateOAuthUser(oauth2Token *oauth2.Token, provider string) (*models.User, *models.OAuthAccount, error) {
 	var err error
 	var id, email string
 
@@ -80,22 +82,22 @@ func GetOrCreateUser(oauth2Token *oauth2.Token, provider string) (*models.User, 
 	case "google":
 		id, email, err = getGoogleInfo(oauth2Token)
 	default:
-		return nil, fmt.Errorf("Couldn't find provider %v", provider)
+		return nil, nil, fmt.Errorf("Couldn't find provider %v", provider)
 	}
 	if err != nil {
-		return nil, fmt.Errorf("Couldn't get id and email from provider %s: %s ", provider, err)
+		return nil, nil, fmt.Errorf("Couldn't get id and email from provider %s: %s ", provider, err)
 	}
 
 	db, err := database.GetDbConnection()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	user, err := db.GetUserByProviderId(id)
+	user, oauthAccount, err := db.GetUserByProviderId(id)
 	if err != nil {
-		user, err = db.CreateOAuthUser(id, provider, email, repository.UserRoleName)
+		user, oauthAccount, err = db.CreateOAuthUser(id, provider, email, repository.UserRoleName)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
@@ -106,5 +108,9 @@ func GetOrCreateUser(oauth2Token *oauth2.Token, provider string) (*models.User, 
 		}
 	}
 
-	return user, nil
+	return user, oauthAccount, nil
+}
+
+func verifyOAuthProvider(provider string) bool {
+	return slices.Contains(providers, provider)
 }

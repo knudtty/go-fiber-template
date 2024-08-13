@@ -10,7 +10,8 @@ import (
 
 type Base struct {
 	*fiber.Ctx
-	Doer *models.User
+	Doer         *models.User
+	OAuthAccount *models.OAuthAccount
 }
 
 func NewBaseContext(c *fiber.Ctx) *Base {
@@ -19,6 +20,9 @@ func NewBaseContext(c *fiber.Ctx) *Base {
 	}
 	if user, ok := b.GetContext("user_data").(models.User); ok {
 		b.Doer = &user
+	}
+	if oauthAccount, ok := b.GetContext("oauth_account_data").(models.OAuthAccount); ok {
+		b.OAuthAccount = &oauthAccount
 	}
 	return b
 }

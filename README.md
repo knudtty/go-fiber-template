@@ -13,15 +13,18 @@ $ make watch # command to start dev environment using docker compose
 ```
 
 ## TODOs
-- Make user and oauth_account models available in WebCtx
-- Test JWT login
+- OAuth account in JWT - parser and generator in same location?
+- Better login
+- Default design
 - github ci/cd
+- Swagger
+- structured logging
+- Ansible config
+- Terraform
 - db TODO migration
 - api TODO routes
 - api keys?
-- Swagger
-- structured logging
-- users, sessions, and roles in db
-- login auth
-- Ansible config
-- Terraform
+- Profile pictures, either from OAuth or local
+- Make user and oauth_account models available in WebCtx
+- submit PR to templ to fix format for rawgo code
+- submit PR to templ to fix LSP for rawgo code

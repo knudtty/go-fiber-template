@@ -22,3 +22,6 @@ migrate.down:
 	docker run --rm -it -v ./platform/migrations:/migrations migrate/migrate -path=/migrations/ -database $(DSN) down
 psql:
 	docker exec -it go-fiber-template-db-1 psql $(DSN)
+fmt:
+	go fmt ./...
+	templ fmt .

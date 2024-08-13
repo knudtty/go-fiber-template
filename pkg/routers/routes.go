@@ -19,7 +19,6 @@ func Routes(app *fiber.App) {
 	app.Use(middleware.JWTParser())
 	app.Use(setBaseContext)
 
-	// TODO: Figure out a configuration strategy
 	switch os.Getenv("ROUTES_AVAILABLE") {
 	case "api":
 		api.Routes(app)

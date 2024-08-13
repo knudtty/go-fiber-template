@@ -33,6 +33,9 @@ func jwtSuccess(c *fiber.Ctx) error {
 		return c.Next()
 	}
 	c.SetUserContext(context.WithValue(c.UserContext(), "user_data", tokenMetadata.User))
+	if tokenMetadata.IsOAuthAccount {
+		c.SetUserContext(context.WithValue(c.UserContext(), "oauth_account_data", tokenMetadata.OAuthAccount))
+	}
 	return c.Next()
 }
 

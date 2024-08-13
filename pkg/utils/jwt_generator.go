@@ -20,9 +20,9 @@ type Tokens struct {
 }
 
 // GenerateNewTokens func for generate a new Access & Refresh tokens.
-func GenerateNewTokens(user *models.User) (*Tokens, error) {
+func GenerateNewTokens(user *models.User, oauthAccount *models.OAuthAccount) (*Tokens, error) {
 	// Generate JWT Access token.
-	accessToken, err := generateNewAccessToken(user)
+	accessToken, err := generateNewAccessToken(user, oauthAccount)
 	if err != nil {
 		// Return token generation error.
 		return nil, err
@@ -35,13 +35,15 @@ func GenerateNewTokens(user *models.User) (*Tokens, error) {
 		return nil, err
 	}
 
+	// oauth_id, oauth_provider, oauth_provider_user_id, account_type
+
 	return &Tokens{
 		Access:  accessToken,
 		Refresh: refreshToken,
 	}, nil
 }
 
-func generateNewAccessToken(user *models.User) (string, error) {
+func generateNewAccessToken(user *models.User, oauthAccount *models.OAuthAccount) (string, error) {
 	// Set secret key from .env file.
 	secret := os.Getenv("JWT_SECRET_KEY")
 
@@ -52,10 +54,18 @@ func generateNewAccessToken(user *models.User) (string, error) {
 	claims := jwt.MapClaims{}
 
 	// Set public claims:
-	claims["id"] = user.ID.String()
-	claims["email"] = user.Email
-	claims["role"] = user.UserRole
+	claims["user_id"] = user.ID.String()
+	claims["user_email"] = user.Email
+	claims["user_role"] = user.UserRole
 	claims["expires"] = time.Now().Add(time.Minute * time.Duration(minutesCount)).Unix()
+	if oauthAccount != nil {
+		claims["account_type"] = "oauth2"
+		claims["oauth_id"] = oauthAccount.ID
+		claims["oauth_provider"] = oauthAccount.Provider
+		claims["oauth_provider_user_id"] = oauthAccount.ProviderUserID
+	} else {
+		claims["account_type"] = "password"
+	}
 
 	// Create a new JWT access token with claims.
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
