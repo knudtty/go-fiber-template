@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"my_project/app/state"
 	"my_project/pkg/routers"
@@ -9,6 +10,10 @@ import (
 
 	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/compress"
+	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 )
 
 func main() {
@@ -22,19 +27,18 @@ func main() {
 
 	db, _ := database.GetDbConnection()
 
-	//// Initialize global middlewares
-	//app.Use(recover.New())
-	//app.Use(compress.New(compress.Config{
-	//	Level: compress.LevelBestSpeed, // 1
-	//}))
-	//app.Use(logger.New())
-	//app.Use(encryptcookie.New(encryptcookie.Config{
-	//	Key: cookiePassword,
-	//}))
+	// Initialize global middlewares
+	app.Use(recover.New())
+	app.Use(compress.New(compress.Config{
+		Level: compress.LevelBestCompression,
+	}))
+	app.Use(logger.New())
+	app.Use(encryptcookie.New(encryptcookie.Config{
+		Key: os.Getenv("COOKIE_PASSWORD"),
+	}))
 
-	//// Static file server
-	//app.Static("/", "./public", fiber.Static{Compress: true})
-	//app.Static("/", "./public/assets/images", fiber.Static{Compress: true})
+	// Static file server
+	app.Static("/", "./public", fiber.Static{Compress: true})
 
 	routers.Routes(app, &state.AppState{
 		DB: db,
