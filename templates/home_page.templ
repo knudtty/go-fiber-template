@@ -1,6 +1,9 @@
 package templates
 
-import "my_project/templates/components"
+import (
+	"my_project/templates/components"
+	"my_project/templates/utils"
+)
 
 templ Home() {
 	@components.Page("Home") {
@@ -12,5 +15,12 @@ templ Home() {
 				Login
 			</button>
 		</a>
+		if utils.IsAuthenticated(ctx) {
+			<a href="/userinfo">
+				<button>
+					User Info
+				</button>
+			</a>
+		}
 	}
 }
