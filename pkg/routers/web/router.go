@@ -4,7 +4,6 @@ import (
 	"log"
 
 	"my_project/app/controllers"
-	"my_project/app/state"
 	ctx "my_project/pkg/context"
 	"my_project/pkg/middleware"
 	"my_project/templates"
@@ -12,19 +11,19 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func Routes(app fiber.Router, as *state.AppState) {
+func Routes(app fiber.Router) {
 	app.Use(setWebContext)
-	publicRoutes(app, as)
-	privateRoutes(app, as)
+	publicRoutes(app)
+	privateRoutes(app)
 }
 
-func WrapWeb(f func(*ctx.WebCtx, *state.AppState) error, state *state.AppState) fiber.Handler {
+func WrapWeb(f func(*ctx.WebCtx) error) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		webCtx, ok := c.UserContext().Value("myCtx").(*ctx.WebCtx)
 		if !ok {
 			log.Fatal("webCtx not found")
 		}
-		return f(webCtx, state)
+		return f(webCtx)
 	}
 }
 
@@ -38,20 +37,20 @@ func setWebContext(c *fiber.Ctx) error {
 	return baseCtx.Next()
 }
 
-func publicRoutes(app fiber.Router, as *state.AppState) {
-	app.Get("/", WrapWeb(func(c *ctx.WebCtx, as *state.AppState) error {
+func publicRoutes(app fiber.Router) {
+	app.Get("/", WrapWeb(func(c *ctx.WebCtx) error {
 		return c.Render(templates.Home())
-	}, as))
+	}))
 
-	app.Get("/login", WrapWeb(func(c *ctx.WebCtx, as *state.AppState) error {
+	app.Get("/login", WrapWeb(func(c *ctx.WebCtx) error {
 		return c.Render(templates.Login())
-	}, as))
+	}))
 	authGroup := app.Group("/auth")
-	authGroup.Get("/session", WrapWeb(controllers.CreateSession, as))
-	authGroup.Get("/redirect", WrapWeb(controllers.AuthRedirectFromProvider, as))
+	authGroup.Get("/session", WrapWeb(controllers.CreateSession))
+	authGroup.Get("/redirect", WrapWeb(controllers.AuthRedirectFromProvider))
 }
 
-func privateRoutes(app fiber.Router, as *state.AppState) {
-	app.Use(WrapWeb(middleware.AuthenticatedUser, as))
-	app.Get("/userinfo", WrapWeb(controllers.UserInfo, as))
+func privateRoutes(app fiber.Router) {
+	app.Use(WrapWeb(middleware.AuthenticatedUser))
+	app.Get("/userinfo", WrapWeb(controllers.UserInfo))
 }

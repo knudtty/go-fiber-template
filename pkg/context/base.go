@@ -3,6 +3,7 @@ package context
 import (
 	"context"
 	"my_project/app/models"
+	"my_project/app/state"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -12,6 +13,7 @@ type Base struct {
 	*fiber.Ctx
 	Doer         *models.User
 	OAuthAccount *models.OAuthAccount
+	*state.AppState
 }
 
 func NewBaseContext(c *fiber.Ctx) *Base {

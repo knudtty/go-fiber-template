@@ -3,7 +3,6 @@ package controllers
 import (
 	"log"
 
-	"my_project/app/state"
 	ctx "my_project/pkg/context"
 	"my_project/pkg/utils"
 
@@ -14,7 +13,7 @@ func UserSignUp(c *ctx.ApiCtx) error {
 	return nil
 }
 
-func AuthRedirectFromProvider(c *ctx.WebCtx, as *state.AppState) error {
+func AuthRedirectFromProvider(c *ctx.WebCtx) error {
 	oauth2Token, provider, err := utils.GetOAuthToken(c.Base)
 	if err != nil {
 		log.Println("Couldn't get oauth token", err)
@@ -33,13 +32,13 @@ func AuthRedirectFromProvider(c *ctx.WebCtx, as *state.AppState) error {
 		return c.Status(400).Redirect("/login")
 	}
 
-	err = as.DB.UpdateUserRefreshToken(user.ID, tokens.Refresh)
+	err = c.DB.UpdateUserRefreshToken(user.ID, tokens.Refresh)
 	if err != nil {
 		log.Println("Couldn't update refresh token: ", err)
 		return c.Status(400).Redirect("/login")
 	}
 
-	err = as.DB.SetUserOAuthTokens(oauth2Token.AccessToken, oauth2Token.RefreshToken, oauth2Token.Expiry)
+	err = c.DB.SetUserOAuthTokens(oauth2Token.AccessToken, oauth2Token.RefreshToken, oauth2Token.Expiry)
 	if err != nil {
 		log.Println("Couldn't set refresh and access tokens: ", err)
 		return c.Status(400).Redirect("/login")
@@ -63,7 +62,7 @@ type loginQueryParams struct {
 }
 
 // Creates session by username and password or oauth
-func CreateSession(c *ctx.WebCtx, as *state.AppState) error {
+func CreateSession(c *ctx.WebCtx) error {
 	qp := new(loginQueryParams)
 	if err := c.QueryParser(qp); err != nil {
 		log.Println("Error parsing login query: ", err)

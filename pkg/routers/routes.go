@@ -16,26 +16,29 @@ type Router struct {
 	r fiber.Router
 }
 
-func Routes(app *fiber.App, state *state.AppState) {
+func Routes(app *fiber.App, as *state.AppState) {
 	app.Use(middleware.JWTParser())
-	app.Use(setBaseContext)
+	app.Use(setBaseContext(as))
 
 	switch os.Getenv("ROUTES_AVAILABLE") {
 	case "api":
-		api.Routes(app, state)
+		api.Routes(app)
 		break
 	case "web":
-		web.Routes(app, state)
+		web.Routes(app)
 		break
 	default:
 		apiGroup := app.Group("/api/v1")
-		api.Routes(apiGroup, state)
-		web.Routes(app, state)
+		api.Routes(apiGroup)
+		web.Routes(app)
 	}
 }
 
-func setBaseContext(c *fiber.Ctx) error {
-	baseCtx := ctx.NewBaseContext(c)
-	baseCtx.SetContext("myCtx", baseCtx)
-	return baseCtx.Next()
+func setBaseContext(as *state.AppState) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		baseCtx := ctx.NewBaseContext(c)
+		baseCtx.AppState = as
+		baseCtx.SetContext("myCtx", baseCtx)
+		return baseCtx.Next()
+	}
 }
