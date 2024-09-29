@@ -1,6 +1,6 @@
 networks:
-  project_dev:
-    name: project_dev
+  go_fiber_template:
+    name: go_fiber_template
     attachable: true
 
 services:
@@ -9,25 +9,25 @@ services:
     volumes:
       - ./postgres_data:/home/postgres/pgdata/data:rwx
       - ./:/home/postgres/workdir
+      - ./postgres_init.bash:/docker-entrypoint-initdb.d/init-user-db.sh:rwx
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     env_file: .env
     user: postgres
-    ports:
-      - "5432:5432"
     networks:
-      - project_dev
+      - go_fiber_template
     healthcheck:
       test: ["CMD-SHELL", "pg_isready", "-d", "${DB_NAME}", "-u", "${DB_USER}"]
       interval: 1s
       timeout: 5s
-      retries: 10
+      retries: 15
 
   redis:
     image: redis:7.4-alpine
+    restart: always
     networks:
-      - project_dev
+      - go_fiber_template
     healthcheck:
       test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
       interval: 1s
@@ -39,7 +39,7 @@ services:
     volumes:
       - ./platform/migrations:/migrations
     networks:
-      - project_dev
+      - go_fiber_template
     links:
       - db
     depends_on:
@@ -47,33 +47,25 @@ services:
         condition: service_healthy
     command: -path=/migrations -database=postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}?sslmode=disable up
 
-  templ:
+  my_project:
     build:
       context: .
-      dockerfile_inline: |
-        FROM golang:1.23-alpine
-        WORKDIR /project
-        RUN go install github.com/bokwoon95/wgo@latest 
-        RUN go install github.com/a-h/templ/cmd/templ@${TEMPL_VERSION}
-        ENTRYPOINT wgo -file=.go -file=.templ -xfile=_templ.go -file=.css TEMPL_EXPERIMENT=rawgo templ generate :: go run main.go
-    attach: true
-    volumes:
-      - ./:/project
-      - ${HOME}/go/pkg/mod:/go/pkg/mod
-    environment:
-      DEVELOPMENT: "true"
-      DOCKER_ENV: "true"
-    working_dir: /project
+      dockerfile: Dockerfile
+    restart: always
     env_file: .env
+    environment:
+      DOCKER_ENV: "true"
     ports:
       - "3000:3000"
     networks:
-      - project_dev
+      - go_fiber_template
     links:
       - db
       - redis
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy

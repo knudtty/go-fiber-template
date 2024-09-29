@@ -3,8 +3,9 @@ package middleware
 import (
 	"context"
 	"log"
-	"my_project/pkg/utils"
 	"os"
+
+	ctx "my_project/pkg/context"
 
 	jwtMiddleware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
@@ -26,16 +27,13 @@ func JWTParser() func(*fiber.Ctx) error {
 
 func jwtSuccess(c *fiber.Ctx) error {
 	token := c.Locals("jwt").(*jwt.Token)
-	tokenMetadata, err := utils.ExtractVerifiedTokenMetadata(token)
+	tokenMetadata, err := ctx.ExtractVerifiedTokenMetadata(token)
 	if err != nil {
 		// We can't parse the jwt,
 		log.Println("Unexpected jwt received: ", token, err)
 		return c.Next()
 	}
-	c.SetUserContext(context.WithValue(c.UserContext(), "user_data", tokenMetadata.User))
-	if tokenMetadata.IsOAuthAccount {
-		c.SetUserContext(context.WithValue(c.UserContext(), "oauth_account_data", tokenMetadata.OAuthAccount))
-	}
+	c.SetUserContext(context.WithValue(c.UserContext(), "token_data", tokenMetadata))
 	return c.Next()
 }
 

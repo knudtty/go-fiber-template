@@ -1,4 +1,6 @@
 external/
-public/assets/css/styles.css
 .env
 *_templ.go
+*.fiber.gz
+deps/
+postgres_data/

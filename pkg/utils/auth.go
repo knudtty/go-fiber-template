@@ -3,9 +3,7 @@ package utils
 import (
 	"fmt"
 	"log"
-	"slices"
 
-	"my_project/app/models"
 	"my_project/pkg/configs"
 	ctx "my_project/pkg/context"
 	"my_project/pkg/repository"
@@ -18,7 +16,6 @@ import (
 )
 
 var pendingAuth = "pending-auth"
-var providers = []string{"github", "google"}
 
 type OAuth2State struct {
 	State    string `json:"oauthState"`
@@ -72,45 +69,57 @@ func GetOAuthToken(c *ctx.Base) (*oauth2.Token, string, error) {
 	return token, oauthState.Provider, err
 }
 
-func GetOrCreateOAuthUser(oauth2Token *oauth2.Token, provider string) (*models.User, *models.OAuthAccount, error) {
+type userInfo struct {
+	id        string
+	email     string
+	avatarURL string
+	name      string
+}
+
+func GetOrCreateOAuthUser(c *ctx.WebCtx, oauth2Token *oauth2.Token, provider string) error {
 	var err error
-	var id, email string
+	var ui userInfo
 
 	switch provider {
 	case "github":
-		id, email, err = getGithubInfo(oauth2Token)
+		ui, err = getGithubInfo(oauth2Token)
 	case "google":
-		id, email, err = getGoogleInfo(oauth2Token)
+		ui, err = getGoogleInfo(oauth2Token)
 	default:
-		return nil, nil, fmt.Errorf("Couldn't find provider %v", provider)
+		return fmt.Errorf("Couldn't find provider %v", provider)
 	}
 	if err != nil {
-		return nil, nil, fmt.Errorf("Couldn't get id and email from provider %s: %s ", provider, err)
+		return fmt.Errorf("Couldn't get id and email from provider %s: %s ", provider, err)
 	}
 
 	db, err := database.GetDbConnection()
 	if err != nil {
-		return nil, nil, err
+		return err
 	}
 
-	user, oauthAccount, err := db.GetUserByProviderId(id)
+	user, oauthAccount, err := db.GetUserByProviderId(ui.id)
 	if err != nil {
-		user, oauthAccount, err = db.CreateOAuthUser(id, provider, email, repository.UserRoleName)
+		user, oauthAccount, err = db.CreateOAuthUser(ui.id, provider, ui.name, ui.email, repository.UserRoleName, ui.avatarURL)
 		if err != nil {
-			return nil, nil, err
+			return err
 		}
 	}
 
-	if user.Email != email {
-		err = db.UsersStore.UpdateUserEmail(user.ID, email)
+	// TODO: Update for profile pic
+	if user.Email != ui.email {
+		err = db.UpdateUserEmail(user.ID, ui.email)
 		if err != nil {
-			log.Printf("Failed to update email for user %v from %v to %v: %v", id, user.Email, email, err)
+			log.Printf("Failed to update email for user %v from %v to %v: %v", ui.id, user.Email, ui.email, err)
+		}
+	}
+	if user.AvatarURL != ui.avatarURL {
+		err = db.UpdateUserAvatar(user.ID, ui.avatarURL)
+		if err != nil {
+			log.Printf("Failed to update email for user %v from %v to %v: %v", ui.id, user.Email, ui.email, err)
 		}
 	}
 
-	return user, oauthAccount, nil
-}
-
-func verifyOAuthProvider(provider string) bool {
-	return slices.Contains(providers, provider)
+	c.Doer = user
+	c.OAuthAccount = oauthAccount
+	return nil
 }

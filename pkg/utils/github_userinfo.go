@@ -13,47 +13,52 @@ import (
 	"golang.org/x/oauth2"
 )
 
-type githubId struct {
-	Id    int    `json:"id"`
-	Email string `json:"email"`
-}
-
 type githubEmail struct {
 	Email   string `json:"email"`
 	Primary bool   `json:"primary"`
 }
 
-func getGithubInfo(oauth2Token *oauth2.Token) (string, string, error) {
-	var id githubId
+func getGithubInfo(oauth2Token *oauth2.Token) (userInfo, error) {
+	var ui userInfo
+	var githubInfo struct {
+		Id        int    `json:"id"`
+		Email     string `json:"email"`
+		AvatarURL string `json:"avatar_url"`
+		Name      string `json:"name"`
+	}
 
 	client := configs.GithubOAuthConfig.Client(context.Background(), oauth2Token)
 
 	// Get Id
 	res, err := client.Get("https://api.github.com/user")
 	if err != nil || res.StatusCode != http.StatusOK {
-		return "", "", fmt.Errorf("getGithubInfo: Github API request failed with status %s: %s", res.Status, err)
+		return ui, fmt.Errorf("getGithubInfo: Github API request failed with status %s: %s", res.Status, err)
 	}
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return "", "", fmt.Errorf("getGithubInfo: %s", err)
+		return ui, fmt.Errorf("getGithubInfo: %s", err)
 	}
 
-	err = json.Unmarshal(body, &id)
+	err = json.Unmarshal(body, &githubInfo)
 	if err != nil {
-		return "", "", fmt.Errorf("getGithubInfo: failed to unmarshal: %s", err)
+		return ui, fmt.Errorf("getGithubInfo: failed to unmarshal: %s", err)
 	}
 
-	if id.Email != "" {
+	ui.id = strconv.Itoa(githubInfo.Id)
+	ui.avatarURL = githubInfo.AvatarURL
+	ui.name = githubInfo.Name
+	if githubInfo.Email != "" {
 		// Email was included in user query, return now
-		return strconv.Itoa(id.Id), id.Email, nil
+		ui.email = githubInfo.Email
+		return ui, nil
 	}
 
 	// Email was not returned in user query, must use emails endpoint
 	res, err = client.Get("https://api.github.com/user/emails")
 	body, err = io.ReadAll(res.Body)
 	if err != nil {
-		return "", "", err
+		return ui, err
 	}
 
 	var emails []githubEmail
@@ -61,7 +66,7 @@ func getGithubInfo(oauth2Token *oauth2.Token) (string, string, error) {
 
 	err = json.Unmarshal(body, &emails)
 	if err != nil {
-		return "", "", fmt.Errorf("getGithubInfo: failed to unmarshal: %s", err)
+		return ui, fmt.Errorf("getGithubInfo: failed to unmarshal: %s", err)
 	}
 
 	for _, e := range emails {
@@ -71,8 +76,9 @@ func getGithubInfo(oauth2Token *oauth2.Token) (string, string, error) {
 		}
 	}
 	if email == "" {
-		return "", "", fmt.Errorf("getGithubInfo: No primary email found: %s", err)
+		return ui, fmt.Errorf("getGithubInfo: No primary email found: %s", err)
 	}
+	ui.email = email
 
-	return strconv.Itoa(id.Id), email, nil
+	return ui, nil
 }

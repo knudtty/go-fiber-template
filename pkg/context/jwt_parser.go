@@ -1,10 +1,12 @@
-package utils
+package context
 
 import (
 	"errors"
 	"fmt"
 	"my_project/app/models"
+	"my_project/pkg/repository"
 	"os"
+	"slices"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -12,10 +14,11 @@ import (
 
 // TokenMetadata struct to describe metadata in JWT.
 type TokenMetadata struct {
-	User           models.User
-	OAuthAccount   models.OAuthAccount
-	IsOAuthAccount bool
-	Expires        int64
+	User            *models.User
+	OAuthAccount    *models.OAuthAccount
+	OrganizationIDs []uuid.UUID
+	IsOAuthAccount  bool
+	Expires         int64
 }
 
 // ExtractVerifiedTokenMetadata func to extract metadata from JWT.
@@ -33,6 +36,18 @@ func ExtractVerifiedTokenMetadata(token *jwt.Token) (*TokenMetadata, error) {
 		email, ok := claims["user_email"].(string)
 		if !ok {
 			return nil, fmt.Errorf("Email not found in jwt claims")
+		}
+
+		// Extract name
+		name, ok := claims["user_name"].(string)
+		if !ok {
+			return nil, fmt.Errorf("Name not found in jwt claims")
+		}
+
+		// Extract avatar
+		avatarURL, ok := claims["avatar_url"].(string)
+		if !ok {
+			avatarURL = ""
 		}
 
 		// Extract role
@@ -60,8 +75,9 @@ func ExtractVerifiedTokenMetadata(token *jwt.Token) (*TokenMetadata, error) {
 			return nil, fmt.Errorf("Unknown account type %s", accountType)
 		}
 
-		var oauthAccount models.OAuthAccount
+		var oauthAccount *models.OAuthAccount
 		if isOauthAccount {
+			oauthAccount = new(models.OAuthAccount)
 			oauthAccount.UserID = userID
 
 			// OAuthAccount id
@@ -83,14 +99,16 @@ func ExtractVerifiedTokenMetadata(token *jwt.Token) (*TokenMetadata, error) {
 		}
 
 		return &TokenMetadata{
-			User: models.User{
-				ID:       userID,
-				Email:    email,
-				UserRole: role,
+			User: &models.User{
+				ID:        userID,
+				Email:     email,
+				Name:      name,
+				UserRole:  role,
+				AvatarURL: avatarURL,
 			},
-			IsOAuthAccount: isOauthAccount,
-			OAuthAccount:   oauthAccount,
-			Expires:        expires,
+			IsOAuthAccount:  isOauthAccount,
+			OAuthAccount:    oauthAccount,
+			Expires:         expires,
 		}, nil
 	}
 
@@ -109,4 +127,26 @@ func verifyToken(tokenString string) (*jwt.Token, error) {
 
 func jwtKeyFunc(token *jwt.Token) (interface{}, error) {
 	return []byte(os.Getenv("JWT_SECRET_KEY")), nil
+}
+
+func verifyRole(role string) error {
+	switch role {
+	case repository.AdminRoleName:
+		// Nothing to do, verified successfully.
+	case repository.ModeratorRoleName:
+		// Nothing to do, verified successfully.
+	case repository.UserRoleName:
+		// Nothing to do, verified successfully.
+	default:
+		// Return error message.
+		return fmt.Errorf("role '%v' does not exist", role)
+	}
+
+	return nil
+}
+
+var providers = []string{"github", "google"}
+
+func verifyOAuthProvider(provider string) bool {
+	return slices.Contains(providers, provider)
 }

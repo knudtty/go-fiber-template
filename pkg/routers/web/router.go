@@ -38,10 +38,6 @@ func setWebContext(c *fiber.Ctx) error {
 }
 
 func publicRoutes(app fiber.Router) {
-	app.Get("/", WrapWeb(func(c *ctx.WebCtx) error {
-		return c.Render(templates.Home())
-	}))
-
 	app.Get("/login", WrapWeb(func(c *ctx.WebCtx) error {
 		return c.Render(templates.Login())
 	}))
@@ -52,5 +48,9 @@ func publicRoutes(app fiber.Router) {
 
 func privateRoutes(app fiber.Router) {
 	app.Use(WrapWeb(middleware.AuthenticatedUser))
+
+	app.Get("/", WrapWeb(func(c *ctx.WebCtx) error {
+		return c.Render(templates.Home())
+	}))
 	app.Get("/userinfo", WrapWeb(controllers.UserInfo))
 }

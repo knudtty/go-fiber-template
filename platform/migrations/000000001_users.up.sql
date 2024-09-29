@@ -7,10 +7,12 @@ CREATE TYPE auth_providers AS ENUM ('github', 'google');
 CREATE TABLE users (
     id UUID DEFAULT uuid_generate_v4 () PRIMARY KEY,
     email VARCHAR (255) NOT NULL UNIQUE,
+    name TEXT NOT NULL,
     password_hash VARCHAR (255) NOT NULL DEFAULT '',
     refresh_token TEXT NOT NULL DEFAULT '',
     user_status INT NOT NULL,
     user_role VARCHAR (25) NOT NULL,
+    avatar_url text NOT NULL DEFAULT '',
     created_at TIMESTAMP NOT NULL DEFAULT NOW (),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );

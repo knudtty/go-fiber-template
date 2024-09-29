@@ -1,0 +1,110 @@
+package components
+
+import (
+	context "my_project/pkg/context"
+	"my_project/templates/utils"
+)
+
+templ profileDropdown() {
+	if utils.IsAuthenticated(ctx) {
+		{{ c := ctx.Value("myCtx").(*context.WebCtx) }}
+		@DropdownTrigger() {
+			<figure class="image is-32x32 is-clickable">
+				<img
+					class="is-rounded"
+					src={ c.Doer.AvatarURL }
+					onerror="this.src='https://bulma.io/assets/images/placeholders/128x128.png';"
+					alt="avatar for user"
+				/>
+			</figure>
+		}
+		@DropdownMenu() {
+			<div class="dropdown-content">
+				<a class="dropdown-item" href="/profile" hx-boost="true">Profile</a>
+				<a class="dropdown-item" href="/logout">Logout</a>
+			</div>
+		}
+	}
+}
+
+type link struct {
+	href, text string
+}
+
+var links = []link{
+	{href: "/", text: "Dashboard"},
+}
+
+templ Navbar() {
+	<nav class="navbar is-spaced" role="navigation" aria-label="main navigation" x-data="{ navOpen: false, toggleMenu() { this.navOpen = !this.navOpen } }">
+		<div class="navbar-brand">
+			<div class="navbar-item is-mobile-only">
+				@Dropdown() {
+					@profileDropdown()
+				}
+			</div>
+			<a class="navbar-item" href="/" aria-label="Navigate to my project home">
+				<span class="is-size-3 has-text-primary-on-scheme-95 has-text-weight-bold is-family-monospace">My<strong class="has-text-primary">Project</strong></span>
+			</a>
+			<a
+				role="button"
+				class="navbar-burger"
+				aria-label="menu"
+				aria-expanded="false"
+				data-target="navbar_menu"
+				x-bind:class="navOpen && 'is-active'"
+				x-on:click="toggleMenu()"
+			>
+				<span aria-hidden="true"></span>
+				<span aria-hidden="true"></span>
+				<span aria-hidden="true"></span>
+				<span aria-hidden="true"></span>
+			</a>
+		</div>
+		<div
+			id="navbar_menu"
+			class="navbar-menu"
+			x-bind:class="navOpen && 'is-active'"
+		>
+			if utils.IsAuthenticated(ctx) {
+				<div class="navbar-start">
+					for _, link := range links {
+						<a
+							class="navbar-item"
+							href={ templ.URL(link.href) }
+							hx-boost="true"
+						>
+							{ link.text }
+						</a>
+					}
+				</div>
+			}
+			<div class="navbar-end">
+				if utils.IsAuthenticated(ctx) {
+					// We know this is valid since user is authenticated
+					@Dropdown("navbar-item", "is-right", "is-desktop-only") {
+						@profileDropdown()
+					}
+				} else {
+					<div class="navbar-item">
+						<a
+							class="button is-primary"
+							href="/signup"
+							hx-boost="true"
+						>
+							Sign up
+						</a>
+					</div>
+					<div class="navbar-item">
+						<a
+							class="button is-light"
+							href="/login"
+						>
+							Log in
+						</a>
+					</div>
+				}
+			</div>
+		</div>
+	</nav>
+}

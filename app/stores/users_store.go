@@ -92,13 +92,13 @@ func (us *UsersStore) getOAuthAccountByProviderId(providerId string) (*models.OA
 	return &oauthAccount, nil
 }
 
-func (us *UsersStore) CreateOAuthUser(providerId, provider, email, role string) (*models.User, *models.OAuthAccount, error) {
+func (us *UsersStore) CreateOAuthUser(providerId, provider, name, email, role, profileUrl string) (*models.User, *models.OAuthAccount, error) {
 	tx, err := us.DB.BeginTx(context.Background(), nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	_, err = tx.Exec("INSERT INTO users (email, user_status, user_role) VALUES ($1, 1, $2)", email, role)
+	_, err = tx.Exec("INSERT INTO users (email, name, user_status, user_role, avatar_url) VALUES ($1, $2, 1, $3, $4)", email, name, role, profileUrl)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -127,5 +127,10 @@ func (us *UsersStore) UpdateUserRefreshToken(userId uuid.UUID, refreshToken stri
 
 func (us *UsersStore) UpdateUserEmail(userId uuid.UUID, email string) error {
 	_, err := us.DB.Exec("UPDATE users SET email = $1 WHERE id = $2", email, userId)
+	return err
+}
+
+func (us *UsersStore) UpdateUserAvatar(userId uuid.UUID, profileUrl string) error {
+	_, err := us.DB.Exec("UPDATE users SET avatar_url = $1 WHERE id = $2", profileUrl, userId)
 	return err
 }

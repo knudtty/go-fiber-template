@@ -1,10 +1,9 @@
-package utils
+package context
 
 import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"my_project/app/models"
 	"os"
 	"strconv"
 	"strings"
@@ -20,9 +19,10 @@ type Tokens struct {
 }
 
 // GenerateNewTokens func for generate a new Access & Refresh tokens.
-func GenerateNewTokens(user *models.User, oauthAccount *models.OAuthAccount) (*Tokens, error) {
+// user *models.User, oauthAccount *models.OAuthAccount
+func (t *TokenMetadata) GenerateNewTokens() (*Tokens, error) {
 	// Generate JWT Access token.
-	accessToken, err := generateNewAccessToken(user, oauthAccount)
+	accessToken, err := t.toAccessToken()
 	if err != nil {
 		// Return token generation error.
 		return nil, err
@@ -43,7 +43,7 @@ func GenerateNewTokens(user *models.User, oauthAccount *models.OAuthAccount) (*T
 	}, nil
 }
 
-func generateNewAccessToken(user *models.User, oauthAccount *models.OAuthAccount) (string, error) {
+func (t *TokenMetadata) toAccessToken() (string, error) {
 	// Set secret key from .env file.
 	secret := os.Getenv("JWT_SECRET_KEY")
 
@@ -54,15 +54,17 @@ func generateNewAccessToken(user *models.User, oauthAccount *models.OAuthAccount
 	claims := jwt.MapClaims{}
 
 	// Set public claims:
-	claims["user_id"] = user.ID.String()
-	claims["user_email"] = user.Email
-	claims["user_role"] = user.UserRole
+	claims["user_id"] = t.User.ID.String()
+	claims["user_email"] = t.User.Email
+	claims["user_name"] = t.User.Name
+	claims["user_role"] = t.User.UserRole
+	claims["avatar_url"] = t.User.AvatarURL
 	claims["expires"] = time.Now().Add(time.Minute * time.Duration(minutesCount)).Unix()
-	if oauthAccount != nil {
+	if t.OAuthAccount != nil {
 		claims["account_type"] = "oauth2"
-		claims["oauth_id"] = oauthAccount.ID
-		claims["oauth_provider"] = oauthAccount.Provider
-		claims["oauth_provider_user_id"] = oauthAccount.ProviderUserID
+		claims["oauth_id"] = t.OAuthAccount.ID
+		claims["oauth_provider"] = t.OAuthAccount.Provider
+		claims["oauth_provider_user_id"] = t.OAuthAccount.ProviderUserID
 	} else {
 		claims["account_type"] = "password"
 	}
@@ -71,13 +73,13 @@ func generateNewAccessToken(user *models.User, oauthAccount *models.OAuthAccount
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	// Generate token.
-	t, err := token.SignedString([]byte(secret))
+	accessToken, err := token.SignedString([]byte(secret))
 	if err != nil {
 		// Return error, it JWT token generation failed.
 		return "", err
 	}
 
-	return t, nil
+	return accessToken, nil
 }
 
 func generateNewRefreshToken() (string, error) {

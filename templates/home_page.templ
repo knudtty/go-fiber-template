@@ -6,21 +6,23 @@ import (
 )
 
 templ Home() {
-	@components.Page("Home") {
-		<div>
-			Hello World!
-		</div>
-		<a href="/login">
-			<button>
-				Login
-			</button>
-		</a>
-		if utils.IsAuthenticated(ctx) {
-			<a href="/userinfo">
-				<button>
+	@components.Page("Home", "") {
+		<div class="container buttons is-centered">
+			if !utils.IsAuthenticated(ctx) {
+				<p>
+					User is not logged in
+				</p>
+				<a class="button" href="/login">
+					Login
+				</a>
+			} else {
+				<p>
+					User is logged in
+				</p>
+				<a class="button" href="/userinfo">
 					User Info
-				</button>
-			</a>
-		}
+				</a>
+			}
+		</div>
 	}
 }

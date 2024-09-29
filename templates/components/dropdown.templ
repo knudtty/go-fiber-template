@@ -1,0 +1,27 @@
+package components
+
+templ Dropdown(classes ...string) {
+	<div
+		class={ "dropdown", classes }
+		x-data="{ open: false, toggle() { this.open = !this.open } }"
+		x-bind:class="open && 'is-active'"
+	>
+		{ children... }
+	</div>
+}
+
+templ DropdownTrigger() {
+	<div
+		class="dropdown-trigger"
+		x-on:click="toggle()"
+		x-on:click.outside="if (!$event.target.closest('.dropdown-menu')) { open = false }"
+	>
+		{ children... }
+	</div>
+}
+
+templ DropdownMenu() {
+	<div class="dropdown-menu" id="dropdown-menu" role="menu">
+		{ children... }
+	</div>
+}

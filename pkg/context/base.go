@@ -20,12 +20,11 @@ func NewBaseContext(c *fiber.Ctx) *Base {
 	b := &Base{
 		Ctx: c,
 	}
-	if user, ok := b.GetContext("user_data").(models.User); ok {
-		b.Doer = &user
+	if tokenData, ok := b.GetContext("token_data").(*TokenMetadata); ok {
+		b.Doer = tokenData.User
+		b.OAuthAccount = tokenData.OAuthAccount
 	}
-	if oauthAccount, ok := b.GetContext("oauth_account_data").(models.OAuthAccount); ok {
-		b.OAuthAccount = &oauthAccount
-	}
+
 	return b
 }
 

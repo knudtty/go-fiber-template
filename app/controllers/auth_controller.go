@@ -20,22 +20,13 @@ func AuthRedirectFromProvider(c *ctx.WebCtx) error {
 		return c.Status(400).Redirect("/login")
 	}
 
-	user, oauthAccount, err := utils.GetOrCreateOAuthUser(oauth2Token, provider)
-	if err != nil {
+	if err := utils.GetOrCreateOAuthUser(c, oauth2Token, provider); err != nil {
 		log.Println("Couldn't get user info: ", err)
 		return c.Status(400).Redirect("/login")
 	}
 
-	tokens, err := utils.GenerateNewTokens(user, oauthAccount)
-	if err != nil {
-		log.Println("Couldn't generate token: ", err)
-		return c.Status(400).Redirect("/login")
-	}
-
-	err = c.DB.UpdateUserRefreshToken(user.ID, tokens.Refresh)
-	if err != nil {
-		log.Println("Couldn't update refresh token: ", err)
-		return c.Status(400).Redirect("/login")
+	if err := c.ReissueJWT(); err != nil {
+		return err
 	}
 
 	err = c.DB.SetUserOAuthTokens(oauth2Token.AccessToken, oauth2Token.RefreshToken, oauth2Token.Expiry)
@@ -43,14 +34,6 @@ func AuthRedirectFromProvider(c *ctx.WebCtx) error {
 		log.Println("Couldn't set refresh and access tokens: ", err)
 		return c.Status(400).Redirect("/login")
 	}
-
-	c.Cookie(&fiber.Cookie{
-		Name:     "sessn-jwt",
-		Value:    tokens.Access,
-		HTTPOnly: true,
-		Secure:   true,
-		SameSite: fiber.CookieSameSiteLaxMode,
-	})
 
 	return c.Status(fiber.StatusOK).Redirect("/")
 }
